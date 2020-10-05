@@ -111,13 +111,13 @@ mkdir UD_Czech-PUD
 
 # [How to run?]
 
-## 1. Train
+## Train
 
-### The Roberta model
+### 1. The Roberta model
 python TTtagger_Roberta.py
 * Note that the version of pytorch should higher than 1.4.0
 
-### The Joint model
+### 2. The Joint model
 
 In order to train a model, you need to select languages in "train_list.csv"
 
