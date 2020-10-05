@@ -1,8 +1,6 @@
 # [Utagger]
-This repository is a submission for NAACL 2019. 
-Please clone https://naacl@bitbucket.org/naacl/tagger.git with the password "naacl2019". 
-The repository will be updated when getting new results which are not handled in the paper. 
-We plan to train all the languages in the CoNLL 2018 shared task.
+This repository is a submission for IEEE Access 2020. The repository will be updated when getting new results which are not handled in the paper. 
+We plan to report performances on all the languages in the CoNLL 2018 shared task.
 
 
 # [Environment settings]
@@ -34,10 +32,13 @@ conda install ftfy
 ### install ELMO
 pip install allennlp
 
-## 4. Clone the source
-git clone https://naacl@bitbucket.org/naacl/tagger.git
 
-password: "naacl2019"
+### install ELMO
+pip install transformers
+
+## 4. Clone the source
+git clone https://github.com/jujbob/Utagger.git
+
 
 ## 5. Download corpora and external resources.
 cd tagger
@@ -110,39 +111,48 @@ mkdir UD_Czech-PUD
 
 # [How to run?]
 
+## 1. Train
+
+### The Roberta model
+python TTtagger_Roberta.py
+* Note that the version of pytorch should higher than 1.4.0
+
+### The Joint model
+
+In order to train a model, you need to select languages in "train_list.csv"
+
+vi train_list.csv
+
+Edit collum number 7 as "yes",  which means you will train that language. 
+You can check several languages; it will be trained sequentially. For example:
+
+
+language_ud_full,language_ud,language,language_code,train_size,dev_size,train,max_epoch,train_files,dev_file,train_language_codes,char,pos,train_type
+
+Before: UD_Chinese-GSD,UD_Chinese,Chinese,zh_gsd,3997,0.7,no,280,zh_gsd-ud-train.conllu,zh_gsd-ud-dev.conllu,zh_gsd,yes,yes,
+
+After : UD_Chinese-GSD,UD_Chinese,Chinese,zh_gsd,3997,0.7,yes,280,zh_gsd-ud-train.conllu,zh_gsd-ud-dev.conllu,zh_gsd,yes,yes,
+
+CUDA_VISIBLE_DEVICES=0 python tagger.py train --cuda_device=0 --home_dir=$HOME_DIR/tagger/ --elmo_active=True --batch_size=32
+
+cd $HOME_DIR/result/UD_Chinese-GSD/
+
+Note that the output forder should be located in $HOME_DIR/result/UD_XXX-XXX.
+
+### Run the tagger without GPU
+
+python tagger.py train --home_dir=$HOME_DIR/tagger/ --batch_size=32
+
+cd $HOME_DIR/result/UD_Chinese-GSD/
+
+
+
+
 ## 1. Prediction
 
-### Run with Pre-trained models (Results showed in the paper)
 
-cd $HOME_DIR/models/
-
-wget https://storage.googleapis.com/naacl/UD_Japanese-Modern-ELMO.zip
-
-unzip UD_Japanese-Modern-ELMO.zip
-
-[Other models can be downloaded here:]
-
-https://storage.googleapis.com/naacl/UD_Korean-GSD-ELMO.zip
-
-https://storage.googleapis.com/naacl/UD_French-GSD-ELMO.zip
-
-https://storage.googleapis.com/naacl/UD_Chinese-GSD-ELMO.zip
-
-https://storage.googleapis.com/naacl/UD_Japanese-GSD-ELMO.zip
-
-https://storage.googleapis.com/naacl/UD_Japanese-Modern-ELMO.zip
-
-https://storage.googleapis.com/naacl/UD_English-EWT-ELMO.zip
-
-https://storage.googleapis.com/naacl/UD_English-PUD-ELMO.zip
-
-https://storage.googleapis.com/naacl/UD_Finnish-PUD.zip         $Finnish-PUD without ELMO 
-
-https://storage.googleapis.com/naacl/UD_Japanese-Modern.zip     $Japanese-Modern without ELMO
-
-https://storage.googleapis.com/naacl/UD_Swedish-PUD.zip     $Swedish without ELMO
-
-https://storage.googleapis.com/naacl/UD_Czech-PUD.zip     $Czech without ELMO
+### Run the tagger without GPU
+python tagger.py predict --test_lang_code=ja_gsd --model $HOME_DIR/models/UD_Japanese-Modern-ELMO/Japanese139_98.43 --test_file=$HOME_DIR/corpus/official-submissions/Uppsala-18/ja_modern.conllu --gold_file=$HOME_DIR/corpus/official-submissions/00-gold-standard/ja_modern.conllu --elmo_weight=$HOME_DIR/ELMO/Japanese/weights.hdf5 --elmo_option=$HOME_DIR/ELMO/Japanese/options.json --ud_name=ja_modern
 
 ### Run the tagger with GPU
 cd $HOME_DIR/tagger
@@ -191,38 +201,5 @@ CUDA_VISIBLE_DEVICES=0 python tagger.py predict --cuda_device=0 --test_lang_code
 
 CUDA_VISIBLE_DEVICES=0 python tagger.py predict --cuda_device=0 --test_lang_code=sv_talbanken --model $HOME_DIR/models/UD_Swedish-PUD/Swedish75_97.62 --test_file=$HOME_DIR/corpus/official-submissions/LATTICE-18/sv_pud.conllu --gold_file=$HOME_DIR/corpus/official-submissions/00-gold-standard/sv_pud.conllu --ud_name=sv_pud
 
-
-### Run the tagger without GPU
-python tagger.py predict --test_lang_code=ja_gsd --model $HOME_DIR/models/UD_Japanese-Modern-ELMO/Japanese139_98.43 --test_file=$HOME_DIR/corpus/official-submissions/Uppsala-18/ja_modern.conllu --gold_file=$HOME_DIR/corpus/official-submissions/00-gold-standard/ja_modern.conllu --elmo_weight=$HOME_DIR/ELMO/Japanese/weights.hdf5 --elmo_option=$HOME_DIR/ELMO/Japanese/options.json --ud_name=ja_modern
-
-## 2. Train
-
-### Run the tagger with GPU
-
-In order to train a model, you need to select languages in "train_list.csv"
-
-vi train_list.csv
-
-Edit collum number 7 as "yes",  which means you will train that language. 
-You can check several languages; it will be trained sequentially. For example:
-
-
-language_ud_full,language_ud,language,language_code,train_size,dev_size,train,max_epoch,train_files,dev_file,train_language_codes,char,pos,train_type
-
-Before: UD_Chinese-GSD,UD_Chinese,Chinese,zh_gsd,3997,0.7,no,280,zh_gsd-ud-train.conllu,zh_gsd-ud-dev.conllu,zh_gsd,yes,yes,
-
-After : UD_Chinese-GSD,UD_Chinese,Chinese,zh_gsd,3997,0.7,yes,280,zh_gsd-ud-train.conllu,zh_gsd-ud-dev.conllu,zh_gsd,yes,yes,
-
-CUDA_VISIBLE_DEVICES=0 python tagger.py train --cuda_device=0 --home_dir=$HOME_DIR/tagger/ --elmo_active=True --batch_size=32
-
-cd $HOME_DIR/result/UD_Chinese-GSD/
-
-Note that the output forder should be located in $HOME_DIR/result/UD_XXX-XXX.
-
-### Run the tagger without GPU
-
-python tagger.py train --home_dir=$HOME_DIR/tagger/ --batch_size=32
-
-cd $HOME_DIR/result/UD_Chinese-GSD/
 
 
